@@ -1,0 +1,47 @@
+# ==============================================================================
+# Docker Ignore Rules for Khaja Agro Farm
+# Excludes local databases, backups, secrets, and tests from production image
+# ==============================================================================
+
+# Database files and persistent volume data (Mounted at /app/data on Railway)
+data/*
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Local backups and migration dumps
+backups/
+pptx_unpacked/
+*.bak
+*.dump
+*.tar.gz
+*.zip
+
+# Local tests
+tests/
+
+# Environment files and secrets
+.env
+.env.*
+.env.local
+.env.production
+!.env.example
+
+# Git metadata
+.git/
+.gitignore
+
+# Application runtime logs
+*.log
+npm-debug.log*
+
+# Node modules
+node_modules/
+
+# OS and Editor metadata
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

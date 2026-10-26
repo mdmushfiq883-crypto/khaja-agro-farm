@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 50" width="160" height="50">
+  <!-- Card Background -->
+  <rect width="160" height="50" rx="8" fill="#FFFFFF"/>
+  <rect x="0.5" y="0.5" width="159" height="49" rx="7.5" fill="none" stroke="#F7941D" stroke-opacity="0.2" stroke-width="1"/>
+  
+  <!-- Nagad Official Flame / Swoosh Emblem -->
+  <g transform="translate(10, 8)">
+    <!-- Red outer petal / flame -->
+    <path d="M12 34 C6 28 4 18 10 10 C13 5 18 2 24 1 C21 5 20 10 21 15 C22 20 25 24 28 28 C26 31 21 34 16 34 C14.5 34 13.2 34 12 34 Z" fill="#ED1C24"/>
+    <!-- Orange inner flame -->
+    <path d="M24 1 C28 5 32 11 32 17 C32 25 25 32 17 34 C24 34 31 29 34 22 C37 15 34 8 28 3 C26.8 2.2 25.4 1.5 24 1 Z" fill="#F7941D"/>
+    <!-- Golden highlight accent -->
+    <path d="M19 14 C18 17 19 21 22 25 C24 22 25 18 24 14 C23 11 21 9 19 8 C18.8 10 18.8 12 19 14 Z" fill="#FDB813"/>
+  </g>
+
+  <!-- Nagad Wordmark -->
+  <g transform="translate(54, 33)">
+    <!-- Bengali / English stylized Nagad lettering -->
+    <text x="0" y="-3" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Hind Siliguri', sans-serif" font-size="22" font-weight="900" fill="#ED1C24" letter-spacing="-0.5">নগদ</text>
+    <text x="46" y="-5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="800" fill="#F7941D" letter-spacing="0.5">nagad</text>
+  </g>
+</svg>

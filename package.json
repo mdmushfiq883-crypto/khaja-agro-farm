@@ -1,0 +1,27 @@
+{
+  "name": "khaja-agro-farm",
+  "version": "1.0.0",
+  "description": "Production E-Commerce Platform for Khaja Agro Farm",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "seed": "node src/db/seed.js",
+    "test": "node --test tests/*.test.js",
+    "test:local": "agy-node --test tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "keywords": [
+    "ecommerce",
+    "agro-farm",
+    "bangladesh",
+    "organic-food",
+    "farm-to-home"
+  ],
+  "author": "Khaja Agro Farm",
+  "license": "UNLICENSED",
+  "private": true
+}
