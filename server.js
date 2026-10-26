@@ -425,6 +425,18 @@ const server = http.createServer(async (req, res) => {
     }
 
     // 5. Storefront Customer Pages
+    // Self-heal: If database has zero products (e.g. fresh deployment), auto-populate catalog, payment methods, and admin
+    try {
+        const { queryOne } = require('./src/db/database');
+        const prodCheck = queryOne("SELECT count(*) as count FROM products");
+        if (!prodCheck || prodCheck.count === 0) {
+            console.log('Zero products detected. Running auto-seed for storefront...');
+            seedDatabase();
+        }
+    } catch (e) {
+        console.error('Storefront auto-seed notice:', e.message);
+    }
+
     if (pathname === '/') return pageRoutes.home(req, res);
     if (pathname === '/shop') return pageRoutes.shop(req, res, query);
     if (pathname === '/cart') return pageRoutes.cart(req, res);
@@ -486,8 +498,9 @@ function startServer(port = config.PORT, host = config.HOST) {
         try {
             const { queryOne } = require('./src/db/database');
             const adminUser = queryOne("SELECT id FROM users WHERE role = 'admin' LIMIT 1");
-            if (!adminUser) {
-                console.log('🌱 Empty database detected on startup. Initializing Khaja Agro store catalog & admin...');
+            const prodCheck = queryOne("SELECT count(*) as count FROM products");
+            if (!adminUser || !prodCheck || prodCheck.count === 0) {
+                console.log('🌱 Empty or unseeded database detected on startup. Initializing Khaja Agro store catalog & admin...');
                 seedDatabase();
             } else {
                 console.log('💾 Verified persistent database loaded. Existing catalog, orders, and credentials preserved.');
