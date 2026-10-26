@@ -65,13 +65,22 @@ class AuthService {
             throw new Error('Phone/Email and password are required.');
         }
 
-        const clean = identifier.trim();
-        const user = queryOne(
-            `SELECT id, full_name, phone, email, password_hash, role, status
-             FROM users
-             WHERE phone = ? OR LOWER(email) = LOWER(?)`,
-            [clean, clean]
-        );
+        const clean = (identifier || '').trim();
+        const cleanPass = (password || '').trim();
+
+        let user = null;
+        if (clean.toLowerCase() === 'admin') {
+            user = queryOne(`SELECT id, full_name, phone, email, password_hash, role, status FROM users WHERE role = 'admin' LIMIT 1`);
+        } else {
+            const digits = clean.replace(/[^0-9]/g, '');
+            const phone11 = digits.length >= 11 ? digits.slice(-11) : clean;
+            user = queryOne(
+                `SELECT id, full_name, phone, email, password_hash, role, status
+                 FROM users
+                 WHERE phone = ? OR phone = ? OR LOWER(email) = LOWER(?)`,
+                [clean, phone11, clean]
+            );
+        }
 
         if (!user) {
             throw new Error('Invalid phone/email or password.');
@@ -81,7 +90,7 @@ class AuthService {
             throw new Error('Your account has been suspended. Please contact support.');
         }
 
-        const isMatch = verifyPassword(password, user.password_hash);
+        const isMatch = verifyPassword(cleanPass, user.password_hash);
         if (!isMatch) {
             throw new Error('Invalid phone/email or password.');
         }
