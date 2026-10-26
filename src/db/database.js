@@ -29,6 +29,13 @@ function initSchema() {
     const schemaPath = path.join(__dirname, 'schema.sql');
     const sql = fs.readFileSync(schemaPath, 'utf8');
     db.exec(sql);
+
+    // Auto-migrate missing columns for existing tables
+    try {
+        db.exec('ALTER TABLE payment_methods ADD COLUMN logo_url TEXT;');
+    } catch (e) {
+        // Column already exists
+    }
 }
 
 // Helper methods with parameterized prepared statements

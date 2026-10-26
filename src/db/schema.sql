@@ -174,6 +174,7 @@ CREATE TABLE IF NOT EXISTS payment_methods (
     instructions TEXT NOT NULL DEFAULT '',
     is_enabled INTEGER NOT NULL DEFAULT 1,
     display_order INTEGER NOT NULL DEFAULT 0,
+    logo_url TEXT,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
