@@ -12,14 +12,14 @@ function renderCheckoutView({ user = null }) {
             Secure Checkout
         </h1>
 
-        <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:32px;">
+        <div class="checkout-layout-grid">
             <!-- Checkout Form -->
             <form id="checkout-form" style="background:#fff;padding:28px;border-radius:var(--radius-lg);border:1px solid var(--border-color);">
                 <h3 style="font-size:1.2rem;font-weight:800;color:var(--forest-green);margin-bottom:18px;border-bottom:1px solid #EDF5EC;padding-bottom:10px;">
                     1. Delivery Information
                 </h3>
 
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div class="form-row-2col">
                     <div class="form-group">
                         <label class="form-label" for="customerName">Full Name *</label>
                         <input type="text" id="customerName" name="customerName" class="form-control"
@@ -33,7 +33,7 @@ function renderCheckoutView({ user = null }) {
                     </div>
                 </div>
 
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div class="form-row-2col">
                     <div class="form-group">
                         <label class="form-label" for="customerEmail">Email Address (Optional)</label>
                         <input type="email" id="customerEmail" name="customerEmail" class="form-control"

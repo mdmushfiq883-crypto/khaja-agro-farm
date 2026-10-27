@@ -62,6 +62,9 @@ test('HTTP Server In-Process Suite', async (t) => {
         assert.match(res.body, /Pure Food for a Better Life/);
         assert.match(res.body, /Shop by Category/);
         assert.match(res.body, /01970271398/);
+        assert.match(res.body, /class="mobile-bottom-nav"/, 'Must render mobile bottom navigation bar');
+        assert.match(res.body, /class="mobile-category-scroll"/, 'Must render mobile category scroll bar');
+        assert.match(res.body, /class="header-hotline-btn"/, 'Must render mobile/desktop header hotline button');
     });
 
     await t.test('2. Product Search & Catalog Filtering', async () => {

@@ -128,6 +128,12 @@ function renderLayout({
                     `}
                 </div>
 
+                <!-- Quick Call Button -->
+                <a href="tel:${escapeHtml(settings.business_phone || config.BUSINESS.PHONE)}" class="header-hotline-btn" aria-label="Call Hotline">
+                    <span>📞</span>
+                    <span class="hotline-number-text">${escapeHtml(settings.business_phone || config.BUSINESS.PHONE)}</span>
+                </a>
+
                 <!-- Social Icons -->
                 <div class="header-social-icons">
                     ${renderSocialIcons(socialLinks)}
@@ -136,7 +142,7 @@ function renderLayout({
         </div>
     </header>
 
-    <!-- C. Navigation Menu -->
+    <!-- C. Navigation Menu (Desktop) -->
     <nav class="main-nav">
         <div class="container">
             <div class="nav-left">
@@ -174,6 +180,16 @@ function renderLayout({
             </button>
         </div>
     </nav>
+
+    <!-- D. Mobile Category Scroll Strip (Mobile only) -->
+    <div class="mobile-category-scroll">
+        <a href="/shop" class="mobile-cat-chip ${activeNav === 'shop' ? 'active' : ''}">🔥 All Products</a>
+        ${categories.map(c => `
+            <a href="/shop?category=${encodeURIComponent(c.slug)}" class="mobile-cat-chip">
+                ${escapeHtml(c.name)}
+            </a>
+        `).join('')}
+    </div>
 
     <!-- Main Content Slot -->
     <main>
@@ -300,6 +316,33 @@ function renderLayout({
             </div>
         </div>
     </footer>
+
+    <!-- Mobile Fixed Bottom Navigation Bar -->
+    <nav class="mobile-bottom-nav" aria-label="Mobile Navigation">
+        <a href="/" class="mobile-bottom-item ${activeNav === 'home' ? 'active' : ''}">
+            <span class="mobile-bottom-icon">🏠</span>
+            <span class="mobile-bottom-label">Home</span>
+        </a>
+        <a href="/shop" class="mobile-bottom-item ${activeNav === 'shop' ? 'active' : ''}">
+            <span class="mobile-bottom-icon">🛍️</span>
+            <span class="mobile-bottom-label">Shop</span>
+        </a>
+        <button type="button" class="mobile-bottom-item js-cart-toggle" aria-label="Open Shopping Cart">
+            <span class="mobile-bottom-icon mobile-cart-icon-wrap">
+                🛒
+                <span class="cart-badge-count mobile-cart-badge">0</span>
+            </span>
+            <span class="mobile-bottom-label">Cart</span>
+        </button>
+        <a href="https://wa.me/8801970271398?text=${encodeURIComponent('আসসালামু আলাইকুম, আমি খাজা এগ্রো ফার্ম থেকে প্রোডাক্ট অর্ডার করতে চাই।')}" target="_blank" rel="noopener noreferrer" class="mobile-bottom-item mobile-bottom-wa" aria-label="WhatsApp">
+            <span class="mobile-bottom-icon">💬</span>
+            <span class="mobile-bottom-label">WhatsApp</span>
+        </a>
+        <a href="${user ? (user.role === 'admin' ? '/admin' : '/account') : '/login'}" class="mobile-bottom-item ${activeNav === 'account' ? 'active' : ''}">
+            <span class="mobile-bottom-icon">👤</span>
+            <span class="mobile-bottom-label">${user ? (user.role === 'admin' ? 'Admin' : 'Account') : 'Account'}</span>
+        </a>
+    </nav>
 
     <!-- App Scripts -->
     <script src="/js/app.js"></script>

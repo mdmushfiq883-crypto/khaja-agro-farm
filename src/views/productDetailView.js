@@ -23,7 +23,7 @@ function renderProductDetailView({ product }) {
             / <span style="color:var(--forest-green);font-weight:600;">${escapeHtml(product.name)}</span>
         </div>
 
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;background:#fff;padding:32px;border-radius:var(--radius-lg);border:1px solid var(--border-color);margin-bottom:40px;">
+        <div class="product-detail-layout">
             <!-- Product Gallery Column -->
             <div>
                 <div style="background:#FAFAF5;border:1px solid var(--border-color);border-radius:var(--radius-md);padding:24px;display:flex;align-items:center;justify-content:center;height:380px;margin-bottom:16px;">
