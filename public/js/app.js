@@ -210,6 +210,27 @@
         openCartDrawer();
     }
 
+    // Direct Checkout (Order Now) - navigates directly to checkout bypassing cart page without overwriting cart
+    function directCheckout({ productId, variationId = null, productName, variationName = null, unitPrice, regularPrice = null, image, quantity = 1 }) {
+        if (!productId) return;
+        const directItem = {
+            productId: Number(productId),
+            variationId: variationId ? Number(variationId) : null,
+            productName,
+            variationName: variationName || null,
+            unitPrice: Number(unitPrice),
+            regularPrice: regularPrice ? Number(regularPrice) : Number(unitPrice),
+            image: image || '/images/khaja_agro_logo.png',
+            quantity: Math.max(1, Number(quantity) || 1)
+        };
+        try {
+            sessionStorage.setItem('kaf_direct_checkout', JSON.stringify([directItem]));
+        } catch (e) {
+            console.error('Failed to save direct checkout session:', e);
+        }
+        window.location.href = '/checkout?direct=1';
+    }
+
     // Open Variation Picker Modal for variable products
     async function openVariationModal(productId) {
         try {
@@ -510,6 +531,7 @@
         saveCart,
         updateCartUI,
         addToCart,
+        directCheckout,
         openCartDrawer,
         closeCartDrawer,
         openMobileNav,

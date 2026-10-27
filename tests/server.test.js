@@ -77,11 +77,26 @@ test('HTTP Server In-Process Suite', async (t) => {
         assert.match(res.body, /Fresh Cow Milk/);
     });
 
-    await t.test('3. Product Details with Dynamic Variations', async () => {
+    await t.test('3. Product Details with Dynamic Variations and Direct Order Now Button', async () => {
         const res = await mockRequest('/product/fresh-cow-milk');
         assert.equal(res.statusCode, 200);
         assert.match(res.body, /MILK-500ML|MILK-1LTR/);
         assert.match(res.body, /Choose Variation \/ Size/);
+        assert.match(res.body, /id="detail-add-btn"/, 'Must render Add to Cart button');
+        assert.match(res.body, /id="detail-order-btn"/, 'Must render Order Now button');
+        assert.match(res.body, /btn-detail-add-cart/, 'Must have btn-detail-add-cart CSS class');
+        assert.match(res.body, /btn-detail-order-now/, 'Must have btn-detail-order-now CSS class');
+        assert.match(res.body, /Add to Cart/);
+        assert.match(res.body, /Order Now/);
+    });
+
+    await t.test('3b. Product Details without Variations (Direct Order Now & Add to Cart)', async () => {
+        const res = await mockRequest('/product/broiler-chicken');
+        assert.equal(res.statusCode, 200);
+        assert.match(res.body, /Broiler Chicken/);
+        assert.match(res.body, /id="detail-add-btn"/, 'Must render Add to Cart button');
+        assert.match(res.body, /id="detail-order-btn"/, 'Must render Order Now button');
+        assert.doesNotMatch(res.body, /Choose Variation \/ Size/, 'Non-variable product must not render variation choices');
     });
 
     await t.test('4. Security: Admin Route Protection (Unauthenticated 302)', async () => {

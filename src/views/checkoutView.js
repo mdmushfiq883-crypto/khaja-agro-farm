@@ -208,6 +208,27 @@ function renderCheckoutView({ user = null }) {
             }
         }
 
+        function getCheckoutState() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isDirectParam = urlParams.get('direct') === '1';
+
+            if (isDirectParam) {
+                try {
+                    const rawDirect = sessionStorage.getItem('kaf_direct_checkout');
+                    if (rawDirect) {
+                        const parsed = JSON.parse(rawDirect);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            return { isDirect: true, items: parsed };
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Direct checkout session read error:', e);
+                }
+            }
+
+            return { isDirect: false, items: getCart() };
+        }
+
         function initCheckout() {
             const form = document.getElementById('checkout-form');
             if (!form) return;
@@ -219,14 +240,19 @@ function renderCheckoutView({ user = null }) {
             const paymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
             const submitBtn = document.getElementById('btn-place-order');
 
+            let currentCheckoutState = getCheckoutState();
+
             function renderCheckoutItems() {
-                const cart = getCart();
+                currentCheckoutState = getCheckoutState();
+                const cart = currentCheckoutState.items;
                 if (!itemsList || !submitBtn) return;
 
                 if (!cart || cart.length === 0) {
                     itemsList.innerHTML = '<div style="text-align:center;padding:30px 10px;">' +
                         '<div style="font-size:2.2rem;margin-bottom:8px;">🛒</div>' +
-                        '<p style="color:var(--muted-text);font-size:0.92rem;margin-bottom:16px;">Your cart is empty. Please add items to checkout.</p>' +
+                        '<p style="color:var(--muted-text);font-size:0.92rem;margin-bottom:16px;">' +
+                        (currentCheckoutState.isDirect ? 'Direct checkout item expired. Please select a product to order.' : 'Your cart is empty. Please add items to checkout.') +
+                        '</p>' +
                         '<a href="/shop" class="cart-btn-primary" style="display:inline-block;width:auto;padding:8px 20px;font-size:0.88rem;">Start Shopping →</a>' +
                     '</div>';
                     submitBtn.disabled = true;
@@ -237,7 +263,19 @@ function renderCheckoutView({ user = null }) {
                 }
 
                 submitBtn.disabled = false;
-                itemsList.innerHTML = cart.map(item => {
+
+                // Direct checkout indicator badge & switch to regular cart if available
+                let directBannerHtml = '';
+                if (currentCheckoutState.isDirect) {
+                    const regularCart = getCart();
+                    const regCount = (regularCart && Array.isArray(regularCart)) ? regularCart.reduce((s, i) => s + (i.quantity || 1), 0) : 0;
+                    directBannerHtml = '<div style="display:flex;align-items:center;justify-content:space-between;background:var(--light-sage);border:1px solid #C8E0C5;padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:0.82rem;">' +
+                        '<span style="color:var(--forest-green);font-weight:700;">⚡ Direct Order Review</span>' +
+                        (regCount > 0 ? '<a href="/checkout" style="color:var(--forest-green);text-decoration:underline;font-size:0.78rem;">Switch to Cart (' + regCount + ')</a>' : '') +
+                    '</div>';
+                }
+
+                const itemsHtml = cart.map(item => {
                     const varTxt = item.variationName ? ('<div style="font-size:0.75rem;color:var(--muted-text);">' + escapeHtml(item.variationName) + '</div>') : '';
                     return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F4F8F3;">' +
                         '<img src="' + escapeHtml(item.image || '/images/khaja_agro_logo.png') + '" style="width:40px;height:40px;object-fit:contain;background:#F8FAF7;border-radius:4px;border:1px solid #E2EAE1;">' +
@@ -249,6 +287,8 @@ function renderCheckoutView({ user = null }) {
                         '<strong style="color:var(--forest-green);font-size:0.9rem;">' + formatMoney(item.unitPrice * item.quantity) + '</strong>' +
                     '</div>';
                 }).join('');
+
+                itemsList.innerHTML = directBannerHtml + itemsHtml;
 
                 const subtotal = cart.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
                 const deliveryFee = (subtotal >= 1500) ? 0 : 60;
@@ -314,7 +354,8 @@ function renderCheckoutView({ user = null }) {
             // Form Submit Handler
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const cart = getCart();
+                const checkoutState = getCheckoutState();
+                const cart = checkoutState.items;
                 if (!cart || cart.length === 0) {
                     alert('Your shopping cart is empty. Please add items to your cart before proceeding.');
                     window.location.href = '/shop';
@@ -409,12 +450,18 @@ function renderCheckoutView({ user = null }) {
                         throw new Error('Order placed but server did not return confirmation number.');
                     }
 
-                    // Clear cart on confirmed success
-                    localStorage.removeItem('kaf_cart');
-                    if (window.KAF && window.KAF.AppState) {
-                        window.KAF.AppState.cart = [];
-                        if (typeof window.KAF.updateCartUI === 'function') {
-                            window.KAF.updateCartUI();
+                    // Order confirmed! Clean up relevant session/cart state
+                    if (checkoutState.isDirect) {
+                        sessionStorage.removeItem('kaf_direct_checkout');
+                        // Do NOT clear regular cart (kaf_cart in localStorage) - preserves customer's ongoing shopping cart
+                    } else {
+                        // Clear regular cart on confirmed cart checkout
+                        localStorage.removeItem('kaf_cart');
+                        if (window.KAF && window.KAF.AppState) {
+                            window.KAF.AppState.cart = [];
+                            if (typeof window.KAF.updateCartUI === 'function') {
+                                window.KAF.updateCartUI();
+                            }
                         }
                     }
 

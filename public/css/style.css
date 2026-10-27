@@ -1243,6 +1243,126 @@ button, input, select, textarea {
     border: 1px solid var(--border-color);
     margin-bottom: 40px;
 }
+
+/* Product Detail Actions: Quantity, Add to Cart & Order Now */
+.product-detail-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: auto;
+    padding-top: 20px;
+    flex-wrap: wrap;
+}
+.product-detail-qty-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.product-detail-qty-box {
+    display: inline-flex;
+    align-items: center;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: #fff;
+    padding: 3px 6px;
+    height: 48px;
+    box-sizing: border-box;
+}
+.product-detail-qty-box button {
+    border: none;
+    background: none;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: var(--forest-green);
+    cursor: pointer;
+    padding: 4px 10px;
+    line-height: 1;
+    transition: color 0.15s, transform 0.1s;
+}
+.product-detail-qty-box button:hover {
+    color: var(--primary-green);
+    transform: scale(1.15);
+}
+.product-detail-qty-box span {
+    font-weight: 800;
+    font-size: 1.05rem;
+    padding: 0 8px;
+    min-width: 26px;
+    text-align: center;
+    color: var(--dark-text);
+}
+.product-detail-btn-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 280px;
+}
+.btn-detail-add-cart {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 48px;
+    padding: 12px 16px;
+    background-color: var(--light-sage);
+    color: var(--forest-green);
+    border: 2px solid var(--forest-green);
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.1s;
+    box-sizing: border-box;
+}
+.btn-detail-add-cart:hover:not(:disabled) {
+    background-color: var(--forest-green);
+    color: var(--white);
+    transform: translateY(-1px);
+}
+.btn-detail-add-cart:disabled {
+    background-color: #ECEFF1;
+    border-color: #CFD8DC;
+    color: #90A4AE;
+    cursor: not-allowed;
+    transform: none;
+}
+.btn-detail-order-now {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 48px;
+    padding: 12px 16px;
+    background-color: var(--forest-green);
+    color: var(--white);
+    border: 2px solid var(--forest-green);
+    border-radius: var(--radius-sm);
+    font-weight: 800;
+    font-size: 0.95rem;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(7, 91, 53, 0.20);
+    transition: background-color 0.2s, border-color 0.2s, transform 0.1s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+.btn-detail-order-now:hover:not(:disabled) {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    box-shadow: 0 6px 16px rgba(7, 91, 53, 0.32);
+    transform: translateY(-1px);
+}
+.btn-detail-order-now:disabled {
+    background-color: #CFD8DC;
+    border-color: #CFD8DC;
+    color: #78909C;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+}
 .checkout-layout-grid {
     display: grid;
     grid-template-columns: 1.6fr 1fr;
@@ -1919,6 +2039,31 @@ button, input, select, textarea {
         grid-template-columns: 1fr !important;
         gap: 20px !important;
         padding: 16px !important;
+    }
+    .product-detail-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding-top: 16px;
+    }
+    .product-detail-qty-wrapper {
+        justify-content: flex-start;
+    }
+    .product-detail-btn-group {
+        width: 100%;
+        min-width: 0;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .btn-detail-add-cart,
+    .btn-detail-order-now {
+        flex: 1 1 135px;
+        min-width: 125px;
+        font-size: 0.88rem;
+        padding: 11px 8px;
+        height: 46px;
     }
     .checkout-layout-grid {
         grid-template-columns: 1fr !important;

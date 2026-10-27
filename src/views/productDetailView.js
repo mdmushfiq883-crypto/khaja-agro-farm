@@ -91,18 +91,28 @@ function renderProductDetailView({ product }) {
                 </div>
                 ` : ''}
 
-                <!-- Quantity and Add to Cart -->
-                <div style="display:flex;align-items:center;gap:16px;margin-top:auto;">
-                    <div style="display:flex;align-items:center;border:2px solid var(--border-color);border-radius:var(--radius-sm);background:#fff;padding:4px 8px;">
-                        <button type="button" id="detail-qty-minus" style="border:none;background:none;font-size:1.1rem;font-weight:800;color:var(--forest-green);cursor:pointer;padding:4px 10px;">-</button>
-                        <span id="detail-qty-val" style="font-weight:800;font-size:1.05rem;padding:0 10px;">1</span>
-                        <button type="button" id="detail-qty-plus" style="border:none;background:none;font-size:1.1rem;font-weight:800;color:var(--forest-green);cursor:pointer;padding:4px 10px;">+</button>
+                <!-- Quantity, Add to Cart & Direct Order Now -->
+                <div class="product-detail-actions">
+                    <div class="product-detail-qty-wrapper">
+                        <span style="font-size:0.85rem;font-weight:700;color:var(--muted-text);margin-right:2px;">Qty:</span>
+                        <div class="product-detail-qty-box">
+                            <button type="button" id="detail-qty-minus" aria-label="Decrease quantity">−</button>
+                            <span id="detail-qty-val">1</span>
+                            <button type="button" id="detail-qty-plus" aria-label="Increase quantity">+</button>
+                        </div>
                     </div>
 
-                    <button type="button" id="detail-add-btn" class="cart-btn-primary" style="flex:1;padding:14px 28px;margin-bottom:0;font-size:1rem;" ${initialStock <= 0 ? 'disabled' : ''}>
-                        <span>🛒</span>
-                        <span>${initialStock > 0 ? 'Add to Cart' : 'Out of Stock'}</span>
-                    </button>
+                    <div class="product-detail-btn-group">
+                        <button type="button" id="detail-add-btn" class="btn-detail-add-cart" ${initialStock <= 0 ? 'disabled' : ''}>
+                            <span>🛒</span>
+                            <span>${initialStock > 0 ? 'Add to Cart' : 'Out of Stock'}</span>
+                        </button>
+
+                        <button type="button" id="detail-order-btn" class="btn-detail-order-now" ${initialStock <= 0 ? 'disabled' : ''}>
+                            <span>⚡</span>
+                            <span>${initialStock > 0 ? 'Order Now' : 'Out of Stock'}</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -136,6 +146,7 @@ function renderProductDetailView({ product }) {
         const regPriceEl = document.getElementById('detail-regular-price');
         const stockBadge = document.getElementById('detail-stock-badge');
         const addBtn = document.getElementById('detail-add-btn');
+        const orderBtn = document.getElementById('detail-order-btn');
         const qtyVal = document.getElementById('detail-qty-val');
         const qtyMinus = document.getElementById('detail-qty-minus');
         const qtyPlus = document.getElementById('detail-qty-plus');
@@ -182,18 +193,27 @@ function renderProductDetailView({ product }) {
                     stockBadge.style.color = '#2E7D32';
                     addBtn.disabled = false;
                     addBtn.innerHTML = '<span>🛒</span> <span>Add to Cart</span>';
+                    if (orderBtn) {
+                        orderBtn.disabled = false;
+                        orderBtn.innerHTML = '<span>⚡</span> <span>Order Now</span>';
+                    }
                 } else {
                     stockBadge.textContent = 'Out of Stock';
                     stockBadge.style.background = '#FFEBEE';
                     stockBadge.style.color = '#C62828';
                     addBtn.disabled = true;
                     addBtn.innerHTML = '<span>Out of Stock</span>';
+                    if (orderBtn) {
+                        orderBtn.disabled = true;
+                        orderBtn.innerHTML = '<span>Out of Stock</span>';
+                    }
                 }
             });
         });
 
         // Add to Cart
         addBtn.onclick = () => {
+            if (currentStock <= 0) return;
             window.KAF.addToCart({
                 productId: ${product.id},
                 variationId: currentVarId,
@@ -205,6 +225,42 @@ function renderProductDetailView({ product }) {
                 quantity: qty
             });
         };
+
+        // Direct Order Now
+        if (orderBtn) {
+            orderBtn.onclick = () => {
+                if (currentStock <= 0) {
+                    if (window.KAF && typeof window.KAF.showToast === 'function') {
+                        window.KAF.showToast('This product is currently out of stock.', 'error');
+                    } else {
+                        alert('This product is currently out of stock.');
+                    }
+                    return;
+                }
+
+                const item = {
+                    productId: ${product.id},
+                    variationId: currentVarId,
+                    productName: currentName,
+                    variationName: currentVarName || null,
+                    unitPrice: currentPrice,
+                    regularPrice: currentRegPrice,
+                    image: currentImage,
+                    quantity: qty
+                };
+
+                if (window.KAF && typeof window.KAF.directCheckout === 'function') {
+                    window.KAF.directCheckout(item);
+                } else {
+                    try {
+                        sessionStorage.setItem('kaf_direct_checkout', JSON.stringify([item]));
+                    } catch (e) {
+                        console.error('Failed to save direct checkout session:', e);
+                    }
+                    window.location.href = '/checkout?direct=1';
+                }
+            };
+        }
     });
     </script>
     `;
