@@ -77,7 +77,7 @@ function renderLayout({
     <meta property="og:type" content="website">
 
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="/css/style.css?v=20261027_v6">
+    <link rel="stylesheet" href="/css/style.css?v=20261027_v7">
 </head>
 <body>
 
@@ -248,9 +248,14 @@ function renderLayout({
             <div id="variation-modal-body" class="modal-body">
                 <!-- Rendered dynamically -->
             </div>
-            <div class="modal-footer">
-                <button type="button" class="cart-btn-secondary js-modal-close" style="width:auto;padding:8px 18px;">Cancel</button>
-                <button type="button" id="btn-modal-add-to-cart" class="cart-btn-primary" style="width:auto;padding:8px 24px;margin-bottom:0;">Add to Cart</button>
+            <div class="modal-footer" style="display:flex;gap:10px;justify-content:flex-end;align-items:center;flex-wrap:wrap;">
+                <button type="button" class="cart-btn-secondary js-modal-close" style="width:auto;padding:8px 14px;margin-bottom:0;">Cancel</button>
+                <button type="button" id="btn-modal-add-to-cart" class="cart-btn-secondary" style="width:auto;padding:8px 16px;background:var(--light-sage);border:1.5px solid var(--forest-green);color:var(--forest-green);font-weight:700;margin-bottom:0;">
+                    <span>🛒</span> <span>Add to Cart</span>
+                </button>
+                <button type="button" id="btn-modal-order-now" class="cart-btn-primary" style="width:auto;padding:8px 20px;background:var(--forest-green);font-weight:800;margin-bottom:0;">
+                    <span>⚡</span> <span>Order Now</span>
+                </button>
             </div>
         </div>
     </div>
@@ -455,7 +460,7 @@ function renderLayout({
     </aside>
 
     <!-- App Scripts -->
-    <script src="/js/app.js?v=20261027_v6"></script>
+    <script src="/js/app.js?v=20261027_v7"></script>
 </body>
 </html>`;
 }

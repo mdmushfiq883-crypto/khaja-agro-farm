@@ -667,7 +667,59 @@ button, input, select, textarea {
 
 .product-card-action {
     margin-top: auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-top: 6px;
 }
+.btn-card-action {
+    flex: 1;
+    min-width: 0;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    font-size: 0.80rem;
+    cursor: pointer;
+    box-sizing: border-box;
+    padding: 6px 4px;
+    line-height: 1;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+.btn-card-cart {
+    background-color: var(--light-sage);
+    color: var(--forest-green);
+    border: 1.5px solid var(--forest-green);
+}
+.btn-card-cart:hover {
+    background-color: var(--forest-green);
+    color: var(--white);
+    transform: translateY(-1px);
+}
+.btn-card-order {
+    background-color: var(--forest-green);
+    color: var(--white);
+    border: 1.5px solid var(--forest-green);
+    box-shadow: 0 2px 6px rgba(7, 91, 53, 0.16);
+}
+.btn-card-order:hover {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(7, 91, 53, 0.25);
+}
+.btn-text-short {
+    display: none;
+}
+.btn-text-full {
+    display: inline;
+}
+
 .btn-add-to-cart {
     width: 100%;
     background-color: var(--forest-green);
@@ -1969,6 +2021,22 @@ button, input, select, textarea {
     }
     .price-regular {
         font-size: 0.74rem;
+    }
+    .product-card-action {
+        gap: 4px;
+        padding-top: 4px;
+    }
+    .btn-card-action {
+        height: 34px;
+        font-size: 0.72rem;
+        padding: 5px 2px;
+        gap: 2px;
+    }
+    .btn-text-full {
+        display: none;
+    }
+    .btn-text-short {
+        display: inline;
     }
     .btn-add-to-cart {
         padding: 8px 4px;

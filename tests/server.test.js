@@ -69,12 +69,17 @@ test('HTTP Server In-Process Suite', async (t) => {
         assert.match(res.body, /id="mobile-nav-drawer"/, 'Must render mobile navigation drawer');
         assert.match(res.body, /Contact Us/, 'Must render Contact Us navigation link');
         assert.match(res.body, /About Us/, 'Must render About Us navigation link');
+        assert.match(res.body, /btn-card-cart js-add-to-cart/, 'Homepage product cards must render Add to Cart button');
+        assert.match(res.body, /btn-card-order js-order-now/, 'Homepage product cards must render Order Now button');
+        assert.match(res.body, /id="btn-modal-order-now"/, 'Variation modal must render Order Now button');
     });
 
     await t.test('2. Product Search & Catalog Filtering', async () => {
         const res = await mockRequest('/shop?q=milk');
         assert.equal(res.statusCode, 200);
         assert.match(res.body, /Fresh Cow Milk/);
+        assert.match(res.body, /btn-card-cart js-add-to-cart/, 'Shop product cards must render Add to Cart button');
+        assert.match(res.body, /btn-card-order js-order-now/, 'Shop product cards must render Order Now button');
     });
 
     await t.test('3. Product Details with Dynamic Variations and Direct Order Now Button', async () => {

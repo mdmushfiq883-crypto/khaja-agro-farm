@@ -232,13 +232,14 @@
     }
 
     // Open Variation Picker Modal for variable products
-    async function openVariationModal(productId) {
+    async function openVariationModal(productId, mode = 'add') {
         try {
             const res = await fetch(`/api/products/${productId}`);
             if (!res.ok) throw new Error('Failed to load product details.');
             const product = await res.json();
 
             AppState.currentProductModal = product;
+            AppState.modalMode = mode;
             const modalEl = document.getElementById('variation-modal');
             const modalBody = document.getElementById('variation-modal-body');
 
@@ -334,12 +335,30 @@
         if (qMinus) qMinus.onclick = () => { if (qty > 1) { qty--; qVal.textContent = qty; } };
         if (qPlus) qPlus.onclick = () => { if (qty < currentVar.stock_quantity) { qty++; qVal.textContent = qty; } };
 
-        // Wire Add button in modal footer
+        // Wire Add to Cart and Order Now buttons in modal footer
         const modalAddBtn = document.getElementById('btn-modal-add-to-cart');
         if (modalAddBtn) {
             modalAddBtn.disabled = !inStock;
             modalAddBtn.onclick = () => {
                 addToCart({
+                    productId: product.id,
+                    variationId: currentVar.id,
+                    productName: product.name,
+                    variationName: currentVar.variation_name,
+                    unitPrice: currentVar.sale_price !== null ? currentVar.sale_price : currentVar.regular_price,
+                    regularPrice: currentVar.regular_price,
+                    image: currentVar.image_url || product.featured_image,
+                    quantity: qty
+                });
+                closeVariationModal();
+            };
+        }
+
+        const modalOrderBtn = document.getElementById('btn-modal-order-now');
+        if (modalOrderBtn) {
+            modalOrderBtn.disabled = !inStock;
+            modalOrderBtn.onclick = () => {
+                directCheckout({
                     productId: product.id,
                     variationId: currentVar.id,
                     productName: product.name,
@@ -451,9 +470,34 @@
             const hasVariations = btn.getAttribute('data-has-variations') === '1';
 
             if (hasVariations) {
-                openVariationModal(productId);
+                openVariationModal(productId, 'add');
             } else {
                 addToCart({
+                    productId: productId,
+                    variationId: null,
+                    productName: btn.getAttribute('data-name'),
+                    variationName: null,
+                    unitPrice: Number(btn.getAttribute('data-price')),
+                    regularPrice: Number(btn.getAttribute('data-regular-price') || btn.getAttribute('data-price')),
+                    image: btn.getAttribute('data-image'),
+                    quantity: 1
+                });
+            }
+        });
+
+        // Direct Order Now buttons on Product Cards
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.js-order-now');
+            if (!btn) return;
+            e.preventDefault();
+
+            const productId = btn.getAttribute('data-product-id');
+            const hasVariations = btn.getAttribute('data-has-variations') === '1';
+
+            if (hasVariations) {
+                openVariationModal(productId, 'order');
+            } else {
+                directCheckout({
                     productId: productId,
                     variationId: null,
                     productName: btn.getAttribute('data-name'),
