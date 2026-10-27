@@ -65,6 +65,10 @@ test('HTTP Server In-Process Suite', async (t) => {
         assert.match(res.body, /class="mobile-bottom-nav"/, 'Must render mobile bottom navigation bar');
         assert.match(res.body, /class="mobile-category-scroll"/, 'Must render mobile category scroll bar');
         assert.match(res.body, /class="header-hotline-btn"/, 'Must render mobile/desktop header hotline button');
+        assert.match(res.body, /class="hamburger-btn js-mobile-nav-toggle"/, 'Must render mobile hamburger menu button');
+        assert.match(res.body, /id="mobile-nav-drawer"/, 'Must render mobile navigation drawer');
+        assert.match(res.body, /Contact Us/, 'Must render Contact Us navigation link');
+        assert.match(res.body, /About Us/, 'Must render About Us navigation link');
     });
 
     await t.test('2. Product Search & Catalog Filtering', async () => {

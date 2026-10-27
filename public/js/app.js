@@ -144,6 +144,33 @@
         }
     }
 
+    // Mobile Navigation Drawer Handlers
+    function openMobileNav() {
+        const overlay = document.getElementById('mobile-nav-overlay');
+        const drawer = document.getElementById('mobile-nav-drawer');
+        const toggleBtn = document.querySelector('.js-mobile-nav-toggle');
+        if (overlay && drawer) {
+            overlay.classList.add('open');
+            drawer.classList.add('open');
+            drawer.setAttribute('aria-hidden', 'false');
+            if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeMobileNav() {
+        const overlay = document.getElementById('mobile-nav-overlay');
+        const drawer = document.getElementById('mobile-nav-drawer');
+        const toggleBtn = document.querySelector('.js-mobile-nav-toggle');
+        if (overlay && drawer) {
+            overlay.classList.remove('open');
+            drawer.classList.remove('open');
+            drawer.setAttribute('aria-hidden', 'true');
+            if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+            document.body.style.overflow = '';
+        }
+    }
+
     // Add Item to Cart
     function addToCart({ productId, variationId = null, productName, variationName = null, unitPrice, regularPrice = null, image, quantity = 1 }) {
         const existingIdx = AppState.cart.findIndex(i =>
@@ -319,6 +346,28 @@
         const cartOverlay = document.getElementById('cart-drawer-overlay');
         if (cartOverlay) cartOverlay.addEventListener('click', closeCartDrawer);
 
+        // Mobile Nav Drawer Toggles
+        const navToggles = document.querySelectorAll('.js-mobile-nav-toggle');
+        navToggles.forEach(el => el.addEventListener('click', (e) => {
+            e.preventDefault();
+            openMobileNav();
+        }));
+
+        const navCloses = document.querySelectorAll('.js-mobile-nav-close');
+        navCloses.forEach(el => el.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeMobileNav();
+        }));
+
+        // Global Escape Key Listener for Modals and Drawers
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeMobileNav();
+                closeCartDrawer();
+                closeVariationModal();
+            }
+        });
+
         // Delegation for Cart Item Quantity +/- and Remove
         const drawerItems = document.getElementById('cart-drawer-items-list');
         if (drawerItems) {
@@ -443,6 +492,8 @@
         addToCart,
         openCartDrawer,
         closeCartDrawer,
+        openMobileNav,
+        closeMobileNav,
         showToast,
         formatMoney
     };

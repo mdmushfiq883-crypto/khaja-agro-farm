@@ -98,6 +98,13 @@ function renderLayout({
     <!-- B. Main Header -->
     <header class="main-header">
         <div class="container">
+            <!-- Mobile Hamburger Menu Button -->
+            <button type="button" class="hamburger-btn js-mobile-nav-toggle" aria-label="Open Navigation Menu" aria-expanded="false" aria-controls="mobile-nav-drawer">
+                <span class="hamburger-bar"></span>
+                <span class="hamburger-bar"></span>
+                <span class="hamburger-bar"></span>
+            </button>
+
             <!-- Brand Logo -->
             <a href="/" class="brand-logo-wrap">
                 <img src="/images/khaja_agro_logo.png" alt="Khaja Agro Farm Logo" class="brand-logo-img">
@@ -134,6 +141,12 @@ function renderLayout({
                     <span class="hotline-number-text">${escapeHtml(settings.business_phone || config.BUSINESS.PHONE)}</span>
                 </a>
 
+                <!-- Mobile Header Cart Button -->
+                <button type="button" class="header-mobile-cart js-cart-toggle" aria-label="Open Shopping Cart">
+                    <span>🛒</span>
+                    <span class="cart-badge-count header-cart-badge">0</span>
+                </button>
+
                 <!-- Social Icons -->
                 <div class="header-social-icons">
                     ${renderSocialIcons(socialLinks)}
@@ -141,6 +154,103 @@ function renderLayout({
             </div>
         </div>
     </header>
+
+    <!-- Mobile Navigation Drawer Overlay -->
+    <div id="mobile-nav-overlay" class="mobile-nav-overlay js-mobile-nav-close"></div>
+
+    <!-- Mobile Navigation Drawer -->
+    <aside id="mobile-nav-drawer" class="mobile-nav-drawer" aria-label="Navigation Menu" aria-hidden="true">
+        <div class="mobile-nav-header">
+            <div class="mobile-nav-brand">
+                <img src="/images/khaja_agro_logo.png" alt="Khaja Agro Farm" class="mobile-nav-logo">
+                <div class="mobile-nav-title-wrap">
+                    <h3>Khaja Agro Farm</h3>
+                    <span>Pure Food for a Better Life</span>
+                </div>
+            </div>
+            <button type="button" class="mobile-nav-close js-mobile-nav-close" aria-label="Close Navigation Menu">✕</button>
+        </div>
+
+        <div class="mobile-nav-body">
+            <!-- Navigation Links -->
+            <div class="mobile-nav-label">Navigation</div>
+            <ul class="mobile-nav-menu">
+                <li>
+                    <a href="/" class="mobile-nav-item ${activeNav === 'home' ? 'active' : ''}">
+                        <span class="nav-ico">🏠</span>
+                        <span>Home</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/shop" class="mobile-nav-item ${activeNav === 'shop' ? 'active' : ''}">
+                        <span class="nav-ico">🛍️</span>
+                        <span>Shop All Products</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/about" class="mobile-nav-item ${activeNav === 'about' ? 'active' : ''}">
+                        <span class="nav-ico">🌾</span>
+                        <span>About Us</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/contact" class="mobile-nav-item ${activeNav === 'contact' ? 'active' : ''}">
+                        <span class="nav-ico">📞</span>
+                        <span>Contact Us</span>
+                    </a>
+                </li>
+            </ul>
+
+            <!-- Categories Section -->
+            <div class="mobile-nav-label" style="margin-top: 18px;">Product Categories</div>
+            <ul class="mobile-nav-categories">
+                ${categories.map(c => `
+                    <li>
+                        <a href="/shop?category=${encodeURIComponent(c.slug)}" class="mobile-cat-link">
+                            <span class="cat-bullet">🌿</span>
+                            <span class="cat-name">${escapeHtml(c.name)}</span>
+                            <span class="cat-count">(${c.product_count || 0})</span>
+                        </a>
+                    </li>
+                `).join('')}
+            </ul>
+
+            <!-- User Auth in Drawer -->
+            <div class="mobile-nav-label" style="margin-top: 18px;">Customer Portal</div>
+            <div class="mobile-nav-auth">
+                ${user ? `
+                    <div style="font-weight:700;color:var(--forest-green);margin-bottom:8px;">
+                        👤 Logged in as: <strong>${escapeHtml(user.fullName)}</strong>
+                    </div>
+                    <a href="${user.role === 'admin' ? '/admin' : '/account'}" class="cart-btn-secondary" style="padding:8px 14px;margin-bottom:8px;">
+                        ${user.role === 'admin' ? '🛡 Admin Panel' : '👤 My Account'}
+                    </a>
+                    <a href="/logout" style="color:var(--danger-red);font-size:0.88rem;font-weight:700;display:inline-block;padding:4px 0;">Logout</a>
+                ` : `
+                    <div style="display:flex;gap:10px;">
+                        <a href="/login" class="cart-btn-primary" style="flex:1;padding:9px;font-size:0.88rem;margin-bottom:0;">👤 Login</a>
+                        <a href="/register" class="cart-btn-secondary" style="flex:1;padding:9px;font-size:0.88rem;">👤+ Register</a>
+                    </div>
+                `}
+            </div>
+
+            <!-- Contact Hotline in Drawer -->
+            <div class="mobile-nav-label" style="margin-top: 20px;">Direct Farm Contact</div>
+            <div class="mobile-nav-contact">
+                <a href="tel:${escapeHtml(settings.business_phone || config.BUSINESS.PHONE)}" class="mobile-contact-pill">
+                    <span>📞 Phone:</span>
+                    <strong>${escapeHtml(settings.business_phone || config.BUSINESS.PHONE)}</strong>
+                </a>
+                <a href="https://wa.me/8801970271398?text=${encodeURIComponent('Hello Khaja Agro Farm, I would like to order.')}" target="_blank" rel="noopener noreferrer" class="mobile-contact-pill wa">
+                    <span>💬 WhatsApp:</span>
+                    <strong>01970271398</strong>
+                </a>
+                <div class="mobile-nav-socials" style="margin-top:14px;">
+                    ${renderSocialIcons(socialLinks)}
+                </div>
+            </div>
+        </div>
+    </aside>
 
     <!-- C. Navigation Menu (Desktop) -->
     <nav class="main-nav">
