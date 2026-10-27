@@ -175,148 +175,266 @@ function renderCheckoutView({ user = null }) {
 
     <!-- Client Script for Checkout -->
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const form = document.getElementById('checkout-form');
-        const itemsList = document.getElementById('checkout-items-list');
-        const subtotalEl = document.getElementById('summary-subtotal');
-        const deliveryEl = document.getElementById('summary-delivery');
-        const totalEl = document.getElementById('summary-total');
-        const txWrap = document.getElementById('tx-ref-wrap');
-        const paymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
-        const submitBtn = document.getElementById('btn-place-order');
-
-        function renderCheckoutItems() {
-            const cart = window.KAF.AppState.cart;
-            if (cart.length === 0) {
-                itemsList.innerHTML = '<p style="color:var(--muted-text);text-align:center;padding:20px;">Your cart is empty. Please add items to checkout.</p>';
-                submitBtn.disabled = true;
-                return;
-            }
-
-            itemsList.innerHTML = cart.map(item => {
-                const varTxt = item.variationName ? ('<div style="font-size:0.75rem;color:var(--muted-text);">' + item.variationName + '</div>') : '';
-                return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F4F8F3;">' +
-                    '<img src="' + (item.image || '/images/khaja_agro_logo.png') + '" style="width:40px;height:40px;object-fit:contain;background:#F8FAF7;border-radius:4px;border:1px solid #E2EAE1;">' +
-                    '<div style="flex:1;">' +
-                        '<div style="font-size:0.88rem;font-weight:700;">' + item.productName + '</div>' +
-                        varTxt +
-                        '<div style="font-size:0.8rem;color:var(--muted-text);">Qty: ' + item.quantity + ' × ' + window.KAF.formatMoney(item.unitPrice) + '</div>' +
-                    '</div>' +
-                    '<strong style="color:var(--forest-green);font-size:0.9rem;">' + window.KAF.formatMoney(item.unitPrice * item.quantity) + '</strong>' +
-                '</div>';
-            }).join('');
-
-            const subtotal = cart.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
-            const deliveryFee = (subtotal >= 1500) ? 0 : 60;
-            const total = subtotal + deliveryFee;
-
-            subtotalEl.textContent = window.KAF.formatMoney(subtotal);
-            deliveryEl.textContent = deliveryFee === 0 ? 'FREE (Over ৳1,500)' : window.KAF.formatMoney(deliveryFee);
-            totalEl.textContent = window.KAF.formatMoney(total);
+    (function () {
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[s]));
         }
 
-        renderCheckoutItems();
-
-        // Payment radio change & dynamic card UI
-        function updatePaymentUI() {
-            const checkedRadio = document.querySelector('input[name="paymentMethod"]:checked');
-            if (!checkedRadio) return;
-
-            const selectedCode = checkedRadio.value;
-            const card = checkedRadio.closest('.checkout-pm-card');
-
-            document.querySelectorAll('.checkout-pm-card').forEach(c => c.classList.remove('selected'));
-            if (card) card.classList.add('selected');
-
-            const name = card ? card.getAttribute('data-name') : '';
-            const number = card ? card.getAttribute('data-number') : '';
-            const instructions = card ? card.getAttribute('data-instructions') : '';
-            const logo = card ? card.getAttribute('data-logo') : '';
-
-            const codBanner = document.getElementById('cod-banner-wrap');
-            const txWrap = document.getElementById('tx-ref-wrap');
-            const txInput = document.getElementById('transactionReference');
-
-            if (selectedCode === 'cod') {
-                if (txWrap) txWrap.style.display = 'none';
-                if (codBanner) codBanner.style.display = 'flex';
-                if (txInput) txInput.required = false;
-            } else {
-                if (codBanner) codBanner.style.display = 'none';
-                if (txWrap) txWrap.style.display = 'block';
-                if (txInput) txInput.required = true;
-
-                const logoEl = document.getElementById('tx-banner-logo');
-                const titleEl = document.getElementById('tx-banner-title');
-                const numEl = document.getElementById('tx-banner-number');
-                const copyBtn = document.getElementById('tx-copy-btn');
-                const instEl = document.getElementById('tx-instructions-text');
-
-                if (logoEl && logo) logoEl.src = logo;
-                if (titleEl && name) titleEl.textContent = name;
-                if (numEl && number) numEl.textContent = number;
-                if (copyBtn && number) copyBtn.setAttribute('data-number', number);
-                if (instEl && instructions) instEl.textContent = instructions;
+        function formatMoney(amount) {
+            if (window.KAF && typeof window.KAF.formatMoney === 'function') {
+                return window.KAF.formatMoney(amount);
             }
+            const val = Math.round(Number(amount) || 0);
+            return '৳ ' + val.toLocaleString('en-US');
         }
 
-        paymentRadios.forEach(radio => {
-            radio.addEventListener('change', updatePaymentUI);
-        });
-
-        // Initialize UI state immediately
-        updatePaymentUI();
-
-        // Form Submit
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const cart = window.KAF.AppState.cart;
-            if (cart.length === 0) {
-                alert('Your shopping cart is empty.');
-                return;
-            }
-
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span>Processing Order... Please wait</span>';
-
-            const payload = {
-                customerName: document.getElementById('customerName').value,
-                customerPhone: document.getElementById('customerPhone').value,
-                customerEmail: document.getElementById('customerEmail').value || null,
-                deliveryAddress: document.getElementById('deliveryAddress').value,
-                deliveryCity: document.getElementById('deliveryCity').value,
-                customerNotes: document.getElementById('customerNotes').value || null,
-                paymentMethodCode: document.querySelector('input[name="paymentMethod"]:checked').value,
-                transactionReference: document.getElementById('transactionReference')?.value || null,
-                items: cart.map(i => ({
-                    productId: i.productId,
-                    variationId: i.variationId,
-                    quantity: i.quantity
-                }))
-            };
-
+        function getCart() {
             try {
-                const res = await fetch('/api/orders/checkout', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                if (window.KAF && typeof window.KAF.loadCart === 'function') {
+                    window.KAF.loadCart();
+                }
+                if (window.KAF && window.KAF.AppState && Array.isArray(window.KAF.AppState.cart) && window.KAF.AppState.cart.length > 0) {
+                    return window.KAF.AppState.cart;
+                }
+                const raw = localStorage.getItem('kaf_cart');
+                const parsed = raw ? JSON.parse(raw) : [];
+                if (window.KAF && window.KAF.AppState) {
+                    window.KAF.AppState.cart = parsed;
+                }
+                return parsed;
+            } catch (e) {
+                return [];
+            }
+        }
 
-                const data = await res.json();
-                if (!res.ok) {
-                    throw new Error(data.error || 'Failed to place order.');
+        function initCheckout() {
+            const form = document.getElementById('checkout-form');
+            if (!form) return;
+
+            const itemsList = document.getElementById('checkout-items-list');
+            const subtotalEl = document.getElementById('summary-subtotal');
+            const deliveryEl = document.getElementById('summary-delivery');
+            const totalEl = document.getElementById('summary-total');
+            const paymentRadios = document.querySelectorAll('input[name="paymentMethod"]');
+            const submitBtn = document.getElementById('btn-place-order');
+
+            function renderCheckoutItems() {
+                const cart = getCart();
+                if (!itemsList || !submitBtn) return;
+
+                if (!cart || cart.length === 0) {
+                    itemsList.innerHTML = '<div style="text-align:center;padding:30px 10px;">' +
+                        '<div style="font-size:2.2rem;margin-bottom:8px;">🛒</div>' +
+                        '<p style="color:var(--muted-text);font-size:0.92rem;margin-bottom:16px;">Your cart is empty. Please add items to checkout.</p>' +
+                        '<a href="/shop" class="cart-btn-primary" style="display:inline-block;width:auto;padding:8px 20px;font-size:0.88rem;">Start Shopping →</a>' +
+                    '</div>';
+                    submitBtn.disabled = true;
+                    if (subtotalEl) subtotalEl.textContent = formatMoney(0);
+                    if (deliveryEl) deliveryEl.textContent = formatMoney(0);
+                    if (totalEl) totalEl.textContent = formatMoney(0);
+                    return;
                 }
 
-                // Clear cart on success
-                localStorage.removeItem('kaf_cart');
-                window.location.href = '/order/success/' + encodeURIComponent(data.order.order_number);
-            } catch (err) {
-                alert(err.message);
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<span>Confirm Order Now ➔</span>';
+                itemsList.innerHTML = cart.map(item => {
+                    const varTxt = item.variationName ? ('<div style="font-size:0.75rem;color:var(--muted-text);">' + escapeHtml(item.variationName) + '</div>') : '';
+                    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F4F8F3;">' +
+                        '<img src="' + escapeHtml(item.image || '/images/khaja_agro_logo.png') + '" style="width:40px;height:40px;object-fit:contain;background:#F8FAF7;border-radius:4px;border:1px solid #E2EAE1;">' +
+                        '<div style="flex:1;">' +
+                            '<div style="font-size:0.88rem;font-weight:700;">' + escapeHtml(item.productName) + '</div>' +
+                            varTxt +
+                            '<div style="font-size:0.8rem;color:var(--muted-text);">Qty: ' + item.quantity + ' × ' + formatMoney(item.unitPrice) + '</div>' +
+                        '</div>' +
+                        '<strong style="color:var(--forest-green);font-size:0.9rem;">' + formatMoney(item.unitPrice * item.quantity) + '</strong>' +
+                    '</div>';
+                }).join('');
+
+                const subtotal = cart.reduce((sum, item) => sum + (item.unitPrice * item.quantity), 0);
+                const deliveryFee = (subtotal >= 1500) ? 0 : 60;
+                const total = subtotal + deliveryFee;
+
+                if (subtotalEl) subtotalEl.textContent = formatMoney(subtotal);
+                if (deliveryEl) deliveryEl.textContent = deliveryFee === 0 ? 'FREE (Over ৳1,500)' : formatMoney(deliveryFee);
+                if (totalEl) totalEl.textContent = formatMoney(total);
             }
-        });
-    });
+
+            renderCheckoutItems();
+
+            // Payment radio change & dynamic card UI
+            function updatePaymentUI() {
+                const checkedRadio = document.querySelector('input[name="paymentMethod"]:checked');
+                if (!checkedRadio) return;
+
+                const selectedCode = checkedRadio.value;
+                const card = checkedRadio.closest('.checkout-pm-card');
+
+                document.querySelectorAll('.checkout-pm-card').forEach(c => c.classList.remove('selected'));
+                if (card) card.classList.add('selected');
+
+                const name = card ? card.getAttribute('data-name') : '';
+                const number = card ? card.getAttribute('data-number') : '';
+                const instructions = card ? card.getAttribute('data-instructions') : '';
+                const logo = card ? card.getAttribute('data-logo') : '';
+
+                const codBanner = document.getElementById('cod-banner-wrap');
+                const txWrap = document.getElementById('tx-ref-wrap');
+                const txInput = document.getElementById('transactionReference');
+
+                if (selectedCode === 'cod') {
+                    if (txWrap) txWrap.style.display = 'none';
+                    if (codBanner) codBanner.style.display = 'flex';
+                    if (txInput) txInput.required = false;
+                } else {
+                    if (codBanner) codBanner.style.display = 'none';
+                    if (txWrap) txWrap.style.display = 'block';
+                    if (txInput) txInput.required = true;
+
+                    const logoEl = document.getElementById('tx-banner-logo');
+                    const titleEl = document.getElementById('tx-banner-title');
+                    const numEl = document.getElementById('tx-banner-number');
+                    const copyBtn = document.getElementById('tx-copy-btn');
+                    const instEl = document.getElementById('tx-instructions-text');
+
+                    if (logoEl && logo) logoEl.src = logo;
+                    if (titleEl && name) titleEl.textContent = name;
+                    if (numEl && number) numEl.textContent = number;
+                    if (copyBtn && number) copyBtn.setAttribute('data-number', number);
+                    if (instEl && instructions) instEl.textContent = instructions;
+                }
+            }
+
+            paymentRadios.forEach(radio => {
+                radio.addEventListener('change', updatePaymentUI);
+            });
+
+            // Initialize UI state immediately
+            updatePaymentUI();
+
+            // Form Submit Handler
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const cart = getCart();
+                if (!cart || cart.length === 0) {
+                    alert('Your shopping cart is empty. Please add items to your cart before proceeding.');
+                    window.location.href = '/shop';
+                    return;
+                }
+
+                const nameInput = document.getElementById('customerName');
+                const phoneInput = document.getElementById('customerPhone');
+                const addressInput = document.getElementById('deliveryAddress');
+                const cityInput = document.getElementById('deliveryCity');
+                const emailInput = document.getElementById('customerEmail');
+                const notesInput = document.getElementById('customerNotes');
+
+                const name = nameInput ? nameInput.value.trim() : '';
+                const phone = phoneInput ? phoneInput.value.trim() : '';
+                const address = addressInput ? addressInput.value.trim() : '';
+                const city = cityInput ? cityInput.value.trim() : 'Chattogram';
+                const email = (emailInput && emailInput.value.trim()) ? emailInput.value.trim() : null;
+                const notes = (notesInput && notesInput.value.trim()) ? notesInput.value.trim() : null;
+
+                if (!name) {
+                    alert('Please enter your full name.');
+                    if (nameInput) nameInput.focus();
+                    return;
+                }
+
+                const cleanPhone = phone.replace(/[^0-9]/g, '');
+                if (cleanPhone.length !== 11 || !cleanPhone.startsWith('01')) {
+                    alert('Please enter a valid 11-digit Bangladeshi mobile number starting with 01 (e.g. 017xxxxxxxx).');
+                    if (phoneInput) phoneInput.focus();
+                    return;
+                }
+
+                if (!address) {
+                    alert('Please enter your detailed delivery address.');
+                    if (addressInput) addressInput.focus();
+                    return;
+                }
+
+                const checkedPm = document.querySelector('input[name="paymentMethod"]:checked');
+                if (!checkedPm) {
+                    alert('Please select a payment method.');
+                    return;
+                }
+                const paymentMethodCode = checkedPm.value;
+
+                let transactionReference = null;
+                if (paymentMethodCode !== 'cod') {
+                    const txInput = document.getElementById('transactionReference');
+                    transactionReference = txInput ? txInput.value.trim() : null;
+                    if (!transactionReference) {
+                        alert('Please enter your Transaction ID (TrxID) or sender mobile number for payment verification.');
+                        if (txInput) txInput.focus();
+                        return;
+                    }
+                }
+
+                // Prevent duplicate submission
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span>Processing Order... Please wait ⏳</span>';
+
+                const payload = {
+                    customerName: name,
+                    customerPhone: cleanPhone,
+                    customerEmail: email,
+                    deliveryAddress: address,
+                    deliveryCity: city,
+                    customerNotes: notes,
+                    paymentMethodCode: paymentMethodCode,
+                    transactionReference: transactionReference,
+                    idempotencyKey: 'kaf_ord_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    items: cart.map(i => ({
+                        productId: Number(i.productId),
+                        variationId: i.variationId ? Number(i.variationId) : null,
+                        quantity: Number(i.quantity) || 1
+                    }))
+                };
+
+                try {
+                    const res = await fetch('/api/orders/checkout', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const data = await res.json();
+                    if (!res.ok || !data.success) {
+                        throw new Error(data.error || 'Failed to complete order submission.');
+                    }
+
+                    if (!data.order || !data.order.order_number) {
+                        throw new Error('Order placed but server did not return confirmation number.');
+                    }
+
+                    // Clear cart on confirmed success
+                    localStorage.removeItem('kaf_cart');
+                    if (window.KAF && window.KAF.AppState) {
+                        window.KAF.AppState.cart = [];
+                        if (typeof window.KAF.updateCartUI === 'function') {
+                            window.KAF.updateCartUI();
+                        }
+                    }
+
+                    // Navigate to confirmed order success view
+                    window.location.href = '/order/success/' + encodeURIComponent(data.order.order_number);
+                } catch (err) {
+                    console.error('Order checkout error:', err);
+                    alert('Order could not be submitted: ' + err.message);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span>Confirm Order Now ➔</span>';
+                }
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initCheckout);
+        } else {
+            initCheckout();
+        }
+    })();
     </script>
     `;
 }

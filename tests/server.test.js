@@ -137,6 +137,68 @@ test('HTTP Server In-Process Suite', async (t) => {
         const data = JSON.parse(res.body);
         assert.equal(data.success, true);
         assert.match(data.order.order_number, /^KAF-\d{8}-\d{4}$/);
+
+        // 6b. Validation: Reject invalid phone numbers
+        const badPhoneRes = await mockRequest('/api/orders/checkout', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: {
+                customerName: 'Bad Phone',
+                customerPhone: '01855',
+                deliveryAddress: 'Chittagong',
+                paymentMethodCode: 'cod',
+                items: [{ productId: milk.id, variationId: variation.id, quantity: 1 }]
+            }
+        });
+        assert.equal(badPhoneRes.statusCode, 400);
+
+        // 6c. Validation: Reject mobile banking without TrxID
+        const noTrxRes = await mockRequest('/api/orders/checkout', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: {
+                customerName: 'Mobile Banking User',
+                customerPhone: '01855554444',
+                deliveryAddress: 'Chittagong',
+                paymentMethodCode: 'bkash',
+                transactionReference: '',
+                items: [{ productId: milk.id, variationId: variation.id, quantity: 1 }]
+            }
+        });
+        assert.equal(noTrxRes.statusCode, 400);
+
+        // 6d. Idempotency prevents duplicate order records
+        const idemKey = 'test_idem_' + Date.now();
+        const idemRes1 = await mockRequest('/api/orders/checkout', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: {
+                customerName: 'Idem Customer',
+                customerPhone: '01855554444',
+                deliveryAddress: 'Chittagong',
+                paymentMethodCode: 'cod',
+                idempotencyKey: idemKey,
+                items: [{ productId: milk.id, variationId: variation.id, quantity: 1 }]
+            }
+        });
+        assert.equal(idemRes1.statusCode, 201);
+        const idemData1 = JSON.parse(idemRes1.body);
+
+        const idemRes2 = await mockRequest('/api/orders/checkout', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: {
+                customerName: 'Idem Customer',
+                customerPhone: '01855554444',
+                deliveryAddress: 'Chittagong',
+                paymentMethodCode: 'cod',
+                idempotencyKey: idemKey,
+                items: [{ productId: milk.id, variationId: variation.id, quantity: 1 }]
+            }
+        });
+        assert.equal(idemRes2.statusCode, 201);
+        const idemData2 = JSON.parse(idemRes2.body);
+        assert.equal(idemData1.order.id, idemData2.order.id, 'Idempotent request must return the existing order without duplicates');
     });
 
     await t.test('7. Admin Portal Views Render without Exceptions', async () => {

@@ -77,7 +77,7 @@ function renderLayout({
     <meta property="og:type" content="website">
 
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="/css/style.css?v=20261027_v4">
+    <link rel="stylesheet" href="/css/style.css?v=20261027_v5">
 </head>
 <body>
 
@@ -455,7 +455,7 @@ function renderLayout({
     </aside>
 
     <!-- App Scripts -->
-    <script src="/js/app.js?v=20261027_v4"></script>
+    <script src="/js/app.js?v=20261027_v5"></script>
 </body>
 </html>`;
 }

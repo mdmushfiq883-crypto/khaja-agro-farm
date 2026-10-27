@@ -34,6 +34,9 @@
         updateCartUI();
     }
 
+    // Immediately load cart state from localStorage so AppState.cart is populated before any DOM listeners fire
+    loadCart();
+
     function formatMoney(amount) {
         const val = Math.round(Number(amount) || 0);
         return `${AppState.settings.currency} ${val.toLocaleString('en-US')}`;
@@ -505,6 +508,7 @@
         AppState,
         loadCart,
         saveCart,
+        updateCartUI,
         addToCart,
         openCartDrawer,
         closeCartDrawer,

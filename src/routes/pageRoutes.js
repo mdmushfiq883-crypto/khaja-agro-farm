@@ -141,37 +141,57 @@ class PageRoutes {
             </div>
         </div>
         <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const list = document.getElementById('full-cart-list');
-            const subtotalEl = document.getElementById('full-cart-subtotal');
-            const cart = window.KAF.AppState.cart;
-
-            if (cart.length === 0) {
-                list.innerHTML = '<div style="text-align:center;padding:40px;"><p style="font-size:1.1rem;color:var(--muted-text);margin-bottom:14px;">Your cart is empty.</p><a href="/shop" class="cart-btn-primary" style="display:inline-block;width:auto;">Explore Shop</a></div>';
-                subtotalEl.textContent = '৳ 0';
-                return;
+        (function() {
+            function getCart() {
+                try {
+                    if (window.KAF && typeof window.KAF.loadCart === 'function') window.KAF.loadCart();
+                    if (window.KAF && window.KAF.AppState && Array.isArray(window.KAF.AppState.cart) && window.KAF.AppState.cart.length > 0) {
+                        return window.KAF.AppState.cart;
+                    }
+                    const raw = localStorage.getItem('kaf_cart');
+                    return raw ? JSON.parse(raw) : [];
+                } catch(e) { return []; }
             }
 
-            list.innerHTML = cart.map(item => \`
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #F0F4EF;">
-                    <div style="display:flex;align-items:center;gap:14px;">
-                        <img src="\${item.image || '/images/khaja_agro_logo.png'}" style="width:54px;height:54px;object-fit:contain;background:#F8FAF7;border-radius:6px;border:1px solid #E2EAE1;">
-                        <div>
-                            <div style="font-weight:800;font-size:1rem;color:var(--dark-text);">\${item.productName}</div>
-                            \${item.variationName ? \`<div style="font-size:0.8rem;color:var(--muted-text);">Option: \${item.variationName}</div>\` : ''}
-                            <div style="font-size:0.85rem;color:var(--forest-green);font-weight:700;">\${window.KAF.formatMoney(item.unitPrice)} each</div>
+            function renderCartPage() {
+                const list = document.getElementById('full-cart-list');
+                const subtotalEl = document.getElementById('full-cart-subtotal');
+                if (!list || !subtotalEl) return;
+                const cart = getCart();
+
+                if (cart.length === 0) {
+                    list.innerHTML = '<div style="text-align:center;padding:40px;"><p style="font-size:1.1rem;color:var(--muted-text);margin-bottom:14px;">Your cart is empty.</p><a href="/shop" class="cart-btn-primary" style="display:inline-block;width:auto;">Explore Shop</a></div>';
+                    subtotalEl.textContent = '৳ 0';
+                    return;
+                }
+
+                list.innerHTML = cart.map(item => \`
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #F0F4EF;">
+                        <div style="display:flex;align-items:center;gap:14px;">
+                            <img src="\${item.image || '/images/khaja_agro_logo.png'}" style="width:54px;height:54px;object-fit:contain;background:#F8FAF7;border-radius:6px;border:1px solid #E2EAE1;">
+                            <div>
+                                <div style="font-weight:800;font-size:1rem;color:var(--dark-text);">\${item.productName}</div>
+                                \${item.variationName ? \`<div style="font-size:0.8rem;color:var(--muted-text);">Option: \${item.variationName}</div>\` : ''}
+                                <div style="font-size:0.85rem;color:var(--forest-green);font-weight:700;">৳ \${Math.round(item.unitPrice)} each</div>
+                            </div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:1.15rem;font-weight:900;color:var(--forest-green);">৳ \${Math.round(item.unitPrice * item.quantity).toLocaleString()}</div>
+                            <div style="font-size:0.8rem;color:var(--muted-text);">Qty: \${item.quantity}</div>
                         </div>
                     </div>
-                    <div style="text-align:right;">
-                        <div style="font-size:1.15rem;font-weight:900;color:var(--forest-green);">\${window.KAF.formatMoney(item.unitPrice * item.quantity)}</div>
-                        <div style="font-size:0.8rem;color:var(--muted-text);">Qty: \${item.quantity}</div>
-                    </div>
-                </div>
-            \`).join('');
+                \`).join('');
 
-            const subtotal = cart.reduce((s, i) => s + (i.unitPrice * i.quantity), 0);
-            subtotalEl.textContent = window.KAF.formatMoney(subtotal);
-        });
+                const subtotal = cart.reduce((s, i) => s + (i.unitPrice * i.quantity), 0);
+                subtotalEl.textContent = '৳ ' + Math.round(subtotal).toLocaleString();
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', renderCartPage);
+            } else {
+                renderCartPage();
+            }
+        })();
         </script>
         `;
 
