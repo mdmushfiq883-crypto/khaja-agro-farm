@@ -150,6 +150,9 @@
         const drawer = document.getElementById('mobile-nav-drawer');
         const toggleBtn = document.querySelector('.js-mobile-nav-toggle');
         if (overlay && drawer) {
+            overlay.style.display = 'block';
+            drawer.style.display = 'flex';
+            void drawer.offsetWidth;
             overlay.classList.add('open');
             drawer.classList.add('open');
             drawer.setAttribute('aria-hidden', 'false');
@@ -168,6 +171,12 @@
             drawer.setAttribute('aria-hidden', 'true');
             if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
             document.body.style.overflow = '';
+            setTimeout(() => {
+                if (!drawer.classList.contains('open')) {
+                    drawer.style.display = 'none';
+                    overlay.style.display = 'none';
+                }
+            }, 300);
         }
     }
 
@@ -365,6 +374,13 @@
                 closeMobileNav();
                 closeCartDrawer();
                 closeVariationModal();
+            }
+        });
+
+        // Close mobile drawer on desktop resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                closeMobileNav();
             }
         });
 
